@@ -1,0 +1,136 @@
+<meta charset="UTF-8">
+<style><!--
+body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .calculator {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .calculator h2 {
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            text-align: center;
+        }
+        .calculator label {
+            font-size: 1em;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .calculator input[type="number"], .calculator input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        .calculator .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .calculator button {
+            padding: 10px 20px;
+            background-color: #bf442e;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        .calculator button:hover {
+            background-color: #a43724;
+        }
+        .calculator .clear {
+            margin-top: 10px;
+            background-color: #bf442e;
+        }
+        .results {
+            margin-top: 20px;
+        }
+        .results div {
+            font-size: 1em;
+            margin: 10px 0;
+        }
+--></style>
+<div class="calculator">
+<p style="text-align: left;"><strong>Instructions</strong></p>
+<ul>
+<li>Enter your <strong>current race distance</strong> in kilometers.</li>
+<li>Input your <strong>current time</strong> in the format [h:min:sec].</li>
+<li>It is important to use this format.</li>
+<li>If your time is 30 Min just enter it in the format 0:30:00.</li>
+<li>Check the boxes for the distances you want to predict.</li>
+<li>Click the <strong>'Predict Times'</strong> button to see your estimated race times.</li>
+</ul>
+<ul></ul>
+<p><label for="currentDistance">Current Distance (km):</label> <input type="number" id="currentDistance" placeholder="Enter current distance in kilometers" step="0.01"> <label for="currentTime">Current Time [h:min:sec]:</label> <input type="text" id="currentTime" placeholder="Enter current time (h:min:sec)"> <label for="predictDistances">Predict Race Times For:</label></p>
+<p><input type="checkbox" id="predict5k" checked="checked"> 5K <input type="checkbox" id="predict10k" checked="checked"> 10K <input type="checkbox" id="predictHalfMarathon" checked="checked"> Half Marathon <input type="checkbox" id="predictMarathon" checked="checked"> Marathon</p>
+<p class="button-container"><button onclick="calculateRaceTimes()">Predict Times</button> <button class="clear" onclick="clearInputs()">Clear Input</button></p>
+<p class="results" id="results"><!-- Results will be displayed here --></p>
+</div>
+<script>
+    function parseTimeToMinutes(timeStr) {
+        let parts = timeStr.split(':').map(Number);
+        return (parts[0] * 60) + parts[1] + (parts[2] / 60);
+    }
+
+    function formatMinutesToTime(minutes) {
+        let totalSeconds = Math.round(minutes * 60);
+        let hours = Math.floor(totalSeconds / 3600);
+        totalSeconds %= 3600;
+        let minutesPart = Math.floor(totalSeconds / 60);
+        let seconds = totalSeconds % 60;
+        return `${hours}:${minutesPart.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    function calculateRaceTimes() {
+        let currentDistance = parseFloat(document.getElementById('currentDistance').value) || 0;
+        let currentTime = document.getElementById('currentTime').value || "0:0:0";
+        
+        // Convert current time to minutes
+        let currentTimeInMinutes = parseTimeToMinutes(currentTime);
+
+        // Conversion factors (e.g., using Riegel's formula)
+        function predictTime(distance) {
+            // Riegel's formula: T2 = T1 * (D2 / D1) ^ 1.06
+            let predictedTimeInMinutes = currentTimeInMinutes * Math.pow((distance / currentDistance), 1.06);
+            return formatMinutesToTime(predictedTimeInMinutes);
+        }
+
+        // Get predictions
+        let predictions = '';
+        if (document.getElementById('predict5k').checked) {
+            predictions += `<div>5K: ${predictTime(5)} (approx.)</div>`;
+        }
+        if (document.getElementById('predict10k').checked) {
+            predictions += `<div>10K: ${predictTime(10)} (approx.)</div>`;
+        }
+        if (document.getElementById('predictHalfMarathon').checked) {
+            predictions += `<div>Half Marathon (21.1K): ${predictTime(21.1)} (approx.)</div>`;
+        }
+        if (document.getElementById('predictMarathon').checked) {
+            predictions += `<div>Marathon (42.2K): ${predictTime(42.2)} (approx.)</div>`;
+        }
+
+        // Display results
+        document.getElementById('results').innerHTML = predictions;
+    }
+
+    function clearInputs() {
+        document.getElementById('currentDistance').value = '';
+        document.getElementById('currentTime').value = '';
+        document.getElementById('predict5k').checked = true;
+        document.getElementById('predict10k').checked = true;
+        document.getElementById('predictHalfMarathon').checked = true;
+        document.getElementById('predictMarathon').checked = true;
+        document.getElementById('results').innerHTML = '';
+    }
+</script>
